@@ -170,7 +170,7 @@ int main()
 		// set detach-on-fork mode off
 		// set follow-fork-mode child --> these both to follow child process in gdb
 		
-		if (420==420)
+		if (1)
 		{
 						
 			
@@ -293,10 +293,10 @@ int main()
 				for (int w=0; w<4200; w++) { continue; } // slow down parent a couple microseconds
 				
 				// background/foreground process ?
-				//pid_t spawnPid;
 				if (in.isBackground && foregroundOnly==0) 
+                {
                     pid_t spawnPid = waitpid(spawnPid, &spawnStatus, spawnPid); 
-				
+				}
 				else { spawnPid = waitpid(spawnPid, &spawnStatus, 0); }
 				
 				// check normal termination:
