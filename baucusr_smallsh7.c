@@ -34,7 +34,7 @@ int main()
 	char inputFile[256] = "";
 	char outputFile[256] = "";
 	char* input[512];
-    memset(input, '\0', 512);
+        memset(input, '\0', 512);
 	
 	
 
@@ -55,9 +55,9 @@ int main()
     //////////////////////////////////////////
     // get input loop
     //////////////////////////////////////////
-	while (keepGoing) 
+    while (keepGoing) 
     {
-		getInput(input, &background, inputFile, outputFile, pid);
+	getInput(input, &background, inputFile, outputFile, pid);
         
         //////////////////////////////////////////////////
         // Check input for BUILTIN command
@@ -72,36 +72,33 @@ int main()
 		
 		// CD
 		else if (strcmp(input[0], "cd") == 0)
-        {
-			if (input[1]) 
-            {
-				if (chdir(input[1]) == -1) 
                 {
-					printf("Directory not found.\n");
-					fflush(stdout);
-				}
-			} 
-            else 
-				chdir(getenv("HOME"));
-			
+		    if (input[1]) 
+                    {
+			if (chdir(input[1]) == -1) 
+                        {
+			    printf("Directory not found.\n");
+			    fflush(stdout);
+			}
+		    } 
+                    else 
+		        chdir(getenv("HOME"));
 		}
-
 		// STATUS
 		else if (strcmp(input[0], "status") == 0) 
-        	printExitStatus(exitStatus);
+        	    printExitStatus(exitStatus);
 
 		// normal command execution
 		else 
-			executeCommand(input, &exitStatus, sa_sigint, &background, inputFile, outputFile);
+		    executeCommand(input, &exitStatus, sa_sigint, &background, inputFile, outputFile);
 		
-
-		// Reset variables
+	        // Reset variables
 		memset(input, '\0', 512);
 		background = 0;
 		inputFile[0] = '\0';
 		outputFile[0] = '\0';
 
-	}
+        }
 	
 	return 0;
 }
@@ -137,9 +134,9 @@ void getInput(char* arr[], int* isBackground, char inputName[], char outputName[
 	// Remove newline
 	int found = 0;
 	for (i=0; !found && i<INPUTLENGTH; i++) 
-    {
-		if (input[i] == '\n') 
         {
+		if (input[i] == '\n') 
+                {
 			input[i] = '\0';
 			found = 1;
 		}
@@ -147,7 +144,7 @@ void getInput(char* arr[], int* isBackground, char inputName[], char outputName[
 
 	// If it's blank, return blank
 	if (!strcmp(input, "")) 
-    {
+        {
 		arr[0] = strdup("");
 		return;
 	}
@@ -157,35 +154,35 @@ void getInput(char* arr[], int* isBackground, char inputName[], char outputName[
 	char *token = strtok(input, space);
 
 	for (i=0; token; i++) 
-    {
+        {
 		// Check for & to be a background process
 		if (!strcmp(token, "&")) 
 			*isBackground = 1;
 		
 		// input redirection ? '<'
 		else if (!strcmp(token, "<")) 
-        {
+                {
 			token = strtok(NULL, space);
 			strcpy(inputName, token);
 		}
 		// output redirection ? '>'
 		else if (!strcmp(token, ">")) 
-        {
+                {
 			token = strtok(NULL, space);
 			strcpy(outputName, token);
 		}
 		
 		else 
-        {
+                {
 			arr[i] = strdup(token);
 			// Replace $$ with pid
 			// Only occurs at end of string in testscirpt
 			for (j=0; arr[i][j]; j++) 
-            {
+                        {
 				if (arr[i][j] == '$' && arr[i][j+1] == '$') 
-                {
-					arr[i][j] = '\0';
-					snprintf(arr[i], 256, "%s%d", arr[i], pid);
+				{
+				    arr[i][j] = '\0';
+				    snprintf(arr[i], 256, "%s%d", arr[i], pid);
 				}
 			}
 		}
@@ -212,14 +209,14 @@ void executeCommand(char* arr[], int* spawnExitStatus, struct sigaction sa, int*
 
 	spawnPid = fork();
 	switch (spawnPid) 
-    {
+        {
 		// error while forking
 		case -1:	
 			perror("Fork() didn't work !\n");
 			exit(1);
 			break;
 		
-        // SPAWN BRANCH
+                // SPAWN BRANCH
 		case 0:	
 			// set SIGKILL to default behavior
 			sa.sa_handler = SIG_DFL;
@@ -227,52 +224,51 @@ void executeCommand(char* arr[], int* spawnExitStatus, struct sigaction sa, int*
 
 			// if input file:
 			if (strcmp(inputName, "")) 
-            {
+                        {
 				input = open(inputName, O_RDONLY);
 				if (input == -1) 
-                {
+                                {
 					perror("Unable to open input file\n");
 					exit(1);
 				}
 				
-                // set STDIN to input
+                                // set STDIN to input
 				result = dup2(input, 0);
 				if (result == -1) 
-                {
+                                {
 					perror("Unable to assign input file\n");
 					exit(2);
 				}
 				
-                // close input
+                               // close input
 				fcntl(input, F_SETFD, FD_CLOEXEC);
 			}
 
 			// if output file present in arguments:
 			if (strcmp(outputName, "")) 
-            {
-				
+                        {	
 				output = open(outputName, O_WRONLY | O_CREAT | O_TRUNC, 0666);
 				if (output == -1) 
-                {
+                                {
 					perror("Unable to open output file\n");
 					exit(1);
 				}
 				
-                // set STDOUT to result
+                               // set STDOUT to result
 				result = dup2(output, 1);
 				if (result == -1) 
-                {
+                                {
 					perror("Unable to assign output file\n");
 					exit(2);
 				}
 				
-                // close output when done
+                                // close output when done
 				fcntl(output, F_SETFD, FD_CLOEXEC);
 			}
 			
 			// EXECUTE HIM ! (execvp only returns if an error)
 			if (execvp(arr[0], (char* const*)arr)) 
-            {
+                        {
 				printf("%s: no such file or directory\n", arr[0]);
 				fflush(stdout);
 				exit(2);
@@ -282,19 +278,19 @@ void executeCommand(char* arr[], int* spawnExitStatus, struct sigaction sa, int*
 		default:	
 			
 			if (*isBackground && allowBackground) 
-            {
+                        {
 				pid_t actualPid = waitpid(spawnPid, spawnExitStatus, WNOHANG);
 				printf("background pid is %d\n", spawnPid);
 				fflush(stdout);
 			}
 			else 
-            {
+                        {
 				pid_t actualPid = waitpid(spawnPid, spawnExitStatus, 0);
 			}
 
 		// KILL ALL ZOMBIES	
 		while ((spawnPid = waitpid(-1, spawnExitStatus, WNOHANG)) > 0) 
-        {
+                {
 			printf("zombie process PID:%d terminated\n", spawnPid);
 			fflush(stdout);
 		}
@@ -308,14 +304,14 @@ void toggleBackgroundMode(int signo)
 {
 
 	if (allowBackground == 1) 
-    {
+        {
 		char* message = "Entering foreground-only mode (& is now ignored)\n";
 		write(1, message, 49);
 		fflush(stdout);
 		allowBackground = 0;
 	}
 	else 
-    {
+        {
 		char* message = "Exiting foreground-only mode\n";
 		write (1, message, 29);
 		fflush(stdout);
